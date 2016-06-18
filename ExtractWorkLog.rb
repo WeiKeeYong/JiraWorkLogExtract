@@ -38,8 +38,12 @@ Date_create = Time.now.iso8601
 
 # Jira_restapi_url = 'https://<yourcompany path>.atlassian.net/rest/api/2/search?jql=timeSpent+is+Not+EMPTY+'
 return_fields = '&fields=worklog,parent,updated,issuetype,summary,customfield_10008&maxResults=200'
+
+##The Start and Ending date want to extract the date use YYYY-MM-DD
 start_date = '2016-03-01'
 end_date = '2016-03-31'
+
+
 search_query_daterange  = 'AND+updated+>=+"' + start_date + '"+And+updated+<="' + end_date + '"'
 
 url = Jira_restapi_url + search_query_daterange + return_fields
