@@ -27,6 +27,7 @@ def load_JSON_From_Web(url_link,login, password, use_ssl )
   (respond.code == "200") ? respond.body : respond.message
 end
 
+
 ## True if you need to extract the worklog created on the start date.
 Only_Worklogs_from_startDate = false
 
@@ -34,10 +35,10 @@ Only_Worklogs_from_startDate = false
 # Login = 'uesrid@domain.com'
 # Password = 'yourpassword'
 ## Today Date.
-Date_create = Time.now.iso8601
+Date_create = Date.parse(Time.now().to_s)
 ##The Start and Ending date want to extract the date use YYYY-MM-DD
 start_date = Date.parse('2016-03-01')
-end_date = Date.parse('2016-03-30')
+end_date = Date.parse('2016-06-12')
 date_counter = 0
 
 while (start_date + date_counter) <= end_date
@@ -83,7 +84,7 @@ while (start_date + date_counter) <= end_date
       else
         ## Need to add new function call to grab > 20 worklogs
         url_worklog = 'https://ibaselelong.atlassian.net/rest/api/2/issue/' + issue_key + '/worklog'
-        return_worklog_body = load_JSON_From_Web(url_worklog,$Login,$Password,true)
+        return_worklog_body = load_JSON_From_Web(url_worklog,Login,Password,true)
         worklog_object = JSON.parse(return_worklog_body,object_class: OpenStruct)
         worklog_total = worklog_object.total.to_i
         worklogs_object = worklog_object.worklogs
@@ -99,9 +100,10 @@ while (start_date + date_counter) <= end_date
           worklog_timeSpentHours = worklog_timeSpentSeconds / 3600.to_f
           worklog_user =  worklogs_object[worklog_counter].author.displayName
           worklog_id = worklogs_object[worklog_counter].id
+          worklog_created = Time.parse(worklogs_object[worklog_counter].created).iso8601
+          worklog_data << [issue_team  , issue_key  , issue_title , epic_link, issue_type  , parent_key, Date_create, worklog_created.to_s , worklog_started.iso8601  ,worklog_user  ,worklog_timeSpentHours,worklog_id]  unless Date.parse(worklog_created) <  (start_date + date_counter) && Only_Worklogs_from_startDate
         end
-        worklog_created = Time.parse(worklogs_object[worklog_counter].created).to_date
-        worklog_data << [issue_team  , issue_key  , issue_title , epic_link, issue_type  , parent_key, Date_create  , worklog_started.iso8601  ,worklog_user  ,worklog_timeSpentHours,worklog_id]  unless worklog_created <  (start_date + date_counter) && Only_Worklogs_from_startDate
+
         worklog_counter += 1
       end
       issue_counter += 1
@@ -111,7 +113,6 @@ while (start_date + date_counter) <= end_date
     insert_to_db(worklog_data)
     date_counter += 1
   end
-
 
 
 end
